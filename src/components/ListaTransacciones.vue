@@ -74,6 +74,7 @@ export default {
   name: 'ListaTransacciones',
   props: ['actualizar'],
   data() {
+    
     return {
       ListaTransacciones: [],
       todas: [],
