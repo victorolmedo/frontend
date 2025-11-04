@@ -7,13 +7,16 @@
           <input type="date" v-model="fechaInicio" />
           <label>Hasta:</label>
           <input type="date" v-model="fechaFin" />
-          <button @click="filtrarPorFecha">Filtrar</button>
-
         </div>
+
         <div class="acciones">
           <button @click="exportarCSV">Exportar CSV</button>
           <button @click="exportarPDF">Exportar PDF</button>
         </div>
+      </div>
+      <div class="busqueda">
+        <input type="text" v-model="busqueda" placeholder="Buscar por categoría o descripción..." />
+        <button @click="filtrarPorFecha">Filtrar</button>
       </div>
 
     <table>
@@ -104,7 +107,8 @@ export default {
       fechaFin: fechaHoy,
       paginaActual: 1,
       porPagina: 9,
-      transaccionEditando: null, 
+      transaccionEditando: null,
+      busqueda: '', 
       categorias: {
         ingreso: ['salario', 'rentas', 'mesada', 'intereses', 'otros'],
         egreso: ['fijo', 'educación', 'alimentación', 'transporte', 'ahorros', 'donaciones']
@@ -229,19 +233,31 @@ exportarPDF() {
   mounted() {
     this.cargarTransacciones()
   },
-  computed: {
+computed: {
+    categoriasEditables() {
+    const tipo = this.transaccionEditando?.tipo
+    return tipo && this.categorias[tipo] ? this.categorias[tipo] : []
+  },
+  transaccionesFiltradas() {
+    const texto = this.busqueda.toLowerCase()
+    return this.ListaTransacciones.filter(t => {
+      const dentroFechas = t.fecha >= this.fechaInicio && t.fecha <= this.fechaFin
+      const coincideTexto =
+        t.categoria.toLowerCase().includes(texto) ||
+        t.descripcion.toLowerCase().includes(texto)
+      return dentroFechas && coincideTexto
+    })
+  },
   transaccionesPaginadas() {
     const inicio = (this.paginaActual - 1) * this.porPagina
     const fin = inicio + this.porPagina
-    return this.ListaTransacciones.slice(inicio, fin)
+    return this.transaccionesFiltradas.slice(inicio, fin)
   },
   totalPaginas() {
-    return Math.ceil(this.ListaTransacciones.length / this.porPagina)
-  },   categoriasEditables() {
-    const tipo = this.transaccionEditando?.tipo
-    return tipo && this.categorias[tipo] ? this.categorias[tipo] : []
+    return Math.ceil(this.transaccionesFiltradas.length / this.porPagina)
   }
 }
+
 
 }
 </script>
@@ -354,6 +370,17 @@ button:hover {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+.busqueda {
+  margin: 10px 0;
+}
+
+.busqueda input {
+  padding: 8px;
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
 
 
