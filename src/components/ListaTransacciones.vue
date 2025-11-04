@@ -74,12 +74,12 @@ export default {
   name: 'ListaTransacciones',
   props: ['actualizar'],
   data() {
-    
+    const fechaHoy = new Date().toISOString().split('T')[0]  // ✅ yyyy-MM-dd
     return {
       ListaTransacciones: [],
       todas: [],
-      fechaInicio: '',
-      fechaFin: '',
+      fechaInicio: fechaHoy,
+      fechaFin: fechaHoy,
       paginaActual: 1,
       porPagina: 10,
       transaccionEditando: null 
@@ -91,23 +91,25 @@ export default {
     }
   },
   methods: {
-    cargarTransacciones() {
-      fetch('http://127.0.0.1:8000/transacciones')
-        .then(res => res.json())
-        .then(data => {
-          this.ListaTransacciones = data
-        })
-        .catch(err => console.error(err))
+    async cargarTransacciones() {
+      try {
+        const res = await fetch('http://localhost:8000/transacciones')
+        const data = await res.json()
+        this.ListaTransacciones = data
+        this.todas = data  // ✅ Copia completa para filtrar
+      } catch (error) {
+        console.error('Error al cargar transacciones:', error)
+      }
     },
-    filtrarPorFecha() {
-      const inicio = new Date(this.fechaInicio)
-      const fin = new Date(this.fechaFin)
+      filtrarPorFecha() {
+        if (!this.todas || !Array.isArray(this.todas)) return
 
-      this.transacciones = this.transacciones.filter(t => {
-        const fecha = new Date(t.fecha)
-        return fecha >= inicio && fecha <= fin
-      })
-    },
+        this.ListaTransacciones = this.todas.filter(t => {
+          return t.fecha >= this.fechaInicio && t.fecha <= this.fechaFin
+        })
+
+        this.paginaActual = 1
+      },
     editar(t) {
       this.transaccionEditando = { ...t }  // ✅ Copia del objeto para edición
     },

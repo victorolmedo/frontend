@@ -31,13 +31,14 @@
 export default {
   name: 'FormularioTransaccion',
   data() {
+        const fechaHoy = new Date().toISOString().split('T')[0]  // ✅ yyyy-MM-dd
     return {
       transaccion: {
         tipo: 'ingreso',
         monto: null,
         categoria: '',
         descripcion: '',
-        fecha: ''
+        fecha: fechaHoy
       },
       mensaje: ''
     }
